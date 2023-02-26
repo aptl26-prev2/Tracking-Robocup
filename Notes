@@ -1,0 +1,1 @@
+data_providers.py updates the coordinates using self.gs.update_robot_coordinates in the method run().
