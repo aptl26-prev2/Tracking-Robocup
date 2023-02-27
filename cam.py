@@ -10,39 +10,61 @@ blue = []
 
 while(True):
       
-    
-    check, frame = video.read()
 
-    npframe = np.array(frame)
+
     # print('shape', npframe.shape)
     # Capture the video frame
     # by frame
     ret, frame = video.read()
+    npframe = np.array(frame)
 
     # Range for color detection
-    lower = [80, 80, 200]
-    # lower = [0, 0, 0]
-    upper = [140, 140, 240]
+    # lower = [80, 80, 200]
+    # # lower = [0, 0, 0]
+    # upper = [140, 140, 240]
+    b_lower = [190, 170, 0]
+    b_upper = [255, 220, 150]
 
-    lower = np.array(lower, dtype="uint8")
-    upper = np.array(upper, dtype="uint8")
+    b_lower = np.array(b_lower, dtype="uint8")
+    b_upper = np.array(b_upper, dtype="uint8")
 
     # print(upper)
 
-    mask = cv2.inRange(frame, lower, upper)
+    b_mask = cv2.inRange(frame, b_lower, b_upper)
 
-    bluecnts = cv2.findContours(mask.copy(),
+    bluecnts = cv2.findContours(b_mask.copy(),
+                              cv2.RETR_EXTERNAL,
+                              cv2.CHAIN_APPROX_SIMPLE)[-2]
+    p_lower = [0, 0, 200]
+    p_upper = [255, 255, 255]
+
+    p_lower = np.array(p_lower, dtype="uint8")
+    p_upper = np.array(p_upper, dtype="uint8")
+
+    p_mask = cv2.inRange(frame, p_lower, p_upper)
+
+    pinkcnts = cv2.findContours(p_mask.copy(),
                               cv2.RETR_EXTERNAL,
                               cv2.CHAIN_APPROX_SIMPLE)[-2]
 
-    if len(bluecnts)>0:
-        blue_area = max(bluecnts, key=cv2.contourArea)
+    for blue_area in bluecnts:
+        if (cv2.contourArea(blue_area) < 100 or cv2.contourArea(blue_area) > 500): continue
+        # blue_area = min(bluecnts, key=cv2.contourArea)
         (xg,yg,wg,hg) = cv2.boundingRect(blue_area)
         cv2.rectangle(frame,(xg,yg),(xg+wg, yg+hg),(0,255,0),2)
         print('xg: ', xg, ',    yg', yg, ',    wg', wg, ',    hg', hg)
+        blue.append((xg, yg, wg, hg))
 
-    pink.append((xg, yg, wg, hg))
-    output = cv2.bitwise_and(frame, frame, mask = mask)
+
+    for pink_area in pinkcnts:
+        if (cv2.contourArea(pink_area) < 10 or cv2.contourArea(pink_area) > 5000): continue
+        # blue_area = min(bluecnts, key=cv2.contourArea)
+        (xg,yg,wg,hg) = cv2.boundingRect(pink_area)
+        cv2.rectangle(frame,(xg,yg),(xg+wg, yg+hg),(0,255,0),2)
+        print('xg p: ', xg, ',    yg p', yg, ',    wg p', wg, ',    hg p', hg)
+
+        pink.append((xg, yg, wg, hg))
+    output = cv2.bitwise_and(frame, frame, mask = p_mask)
   
     # Display the resulting frame
     # cv2.imshow("frames", frame)
